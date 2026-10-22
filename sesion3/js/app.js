@@ -2,6 +2,7 @@
 const SITE_AUTHOR = 'Hebert Cussi';
 const API_BASE = 'https://jsonplaceholder.typicode.com';
 const POKE_API = 'https://pokeapi.co/api/v2';
+const COUNTRIES_API = 'https://countries.dev';
 
 // let: cambia según la interacción del usuario
 let currentFilter = 'all';
@@ -229,3 +230,213 @@ const renderFotter=({full_name,role,location,skills})=>{
 }
 
 renderFotter(devProfile)
+
+const projectsGrid=document.querySelector('.projects-grid')
+const filterButtons=document.querySelectorAll('.filter-btn')
+const toastEl= document.getElementById('toast');
+
+function renderProjects(category='all'){
+    
+    if(!projectsGrid) return;
+    console.log(category);
+
+    const filtered = filterProjects(category);
+
+    projectsGrid.innerHTML = filtered
+    .map(p => p.toHTML())
+    .join('');
+
+    filterButtons.forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.filter === category);
+    });
+
+    const counter=document.getElementById('project-count');
+    if(counter) counter.textContent=`${filtered.length} proyectos`
+}
+
+const filterProjects = (category)=>
+    category === 'all'
+    ?localProjects
+    :localProjects.filter(p=>p.category === category);
+
+filterButtons.forEach(btn=>{
+    btn.addEventListener('click',(e)=>{
+        currentFilter=e.currentTarget.dataset.filter;
+        console.log(currentFilter);        
+        renderProjects(currentFilter);
+    });    
+})
+
+
+renderProjects('all');
+
+
+const getTitles = () => localProjects.map(p => p.title);
+
+const countByCategory = localProjects.reduce((acc, p) => {  // .reduce()
+  acc[p.category] = (acc[p.category] || 0) + 1;
+  return acc;
+}, {});
+
+const findProject = (id) => localProjects.find(p => p.id === id); 
+
+console.log('1 – Síncrono');
+setTimeout(() => console.log('3 – Macrotarea'), 0);
+Promise.resolve()
+  .then(() => console.log('2 – Microtarea'));
+console.log('1b – Síncrono también');
+
+function validateEmail(email) {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      const valid =
+        /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+      if (valid) resolve({ ok: true, email });
+      else reject(new Error('Email inválido'));
+    }, 500);
+  });
+}
+
+validateEmail('hebert@ejemplo.com')
+  .then(({ email }) => console.log(`✅ Email válido: ${email}`))
+  .catch(err => console.error('❌', err.message));
+
+async function fetchJSON(url){
+    const res=await fetch(url);
+    if(!res.ok) throw new Error(`HTTP ${res.status} – ${res.statusText}`)
+    return await res.json();
+}
+
+async function fetchProjects() {
+    const loader=document.getElementById('projects-loader');
+    if(loader) loader.classList.remove('hidden');
+    
+    try{
+
+        const post= await fetchJSON(`${API_BASE}/posts?_limit=3`)
+
+        const extra= post.map(({ id, title, body })=> new Project({
+            id: id+50,
+            emoji: '🌐',
+            title: title.slice(0,40)+'...',
+            description: body.slice(0,100)+'...',
+            techs: ['Fetch API','JSONPlaceholder', 'REST']
+        }));
+
+        projectsData=[... localProjects, ...extra];
+
+        console.log(projectsData);
+        
+        showToast('Proyectos de API cargados ✅');
+    }
+    catch (error){
+        console.log('Error al cargar proyectos', error);
+        showToast(`Error: ${error.message}`, 'error');
+    }
+    // finally{
+    //     if(loader) loader.classList.add('hidden')
+
+    // }
+    
+}
+
+function showToast(msg, type = 'success') {
+  if (!toastEl) return;
+  toastEl.textContent = msg;
+  toastEl.className = `toast toast--${type} toast--show`;
+
+  // Remover clase después de 3s con setTimeout (Event Loop)
+  setTimeout(() => {
+    toastEl.classList.remove('toast--show');
+  }, 3000);
+}
+
+const pokeGrid       = document.getElementById('poke-grid')
+const pokeSection    = document.getElementById('poke-section');
+const pokeBtnNext    = document.getElementById('poke-next');
+
+async function fetchPokemons(offset=0) {
+    if(!pokeGrid) return;
+    
+    pokeGrid.innerHTML = '<p class="loading-text">Cargando Pokémon...</p>';
+
+    try {
+        const data= await fetchJSON(`${POKE_API}/pokemon?limit=6&offset=${offset}`)  
+        const details= await Promise.all(
+            data.results.map(p=> fetchJSON(p.url))
+        )
+        pokeGrid.innerHTML= details.map(({ id, name,  sprites, types })=>{
+            const type = types[0].type.name;
+            const img  = sprites.other['official-artwork'].front_default
+                || sprites.front_default;
+                return `
+                <div class="poke-card poke--${type}">
+                <img src="${img}" alt="${name}" loading="lazy" />
+                <p class="poke-name">${name}</p>
+                <span class="poke-type">${type}</span>
+                </div>`;
+            }).join('');
+    } catch (error) {
+        pokeGrid.innerHTML=`<p class="error-text">Error: ${error.message}</p>`;
+    }
+    // finally{
+    //     pokeGrid.innerHTML='';
+    // }
+
+}
+
+if (pokeBtnNext) {
+  pokeBtnNext.addEventListener('click', () => {
+    pokemonPage += 6;
+    fetchPokemons(pokemonPage);
+  });
+}
+const countryInput   = document.getElementById('country-search');
+const countryResult  = document.getElementById('country-result');
+
+async function fetchCountry(query){
+    if (!countryResult || !query.trim()) return;
+    countryResult.innerHTML = '<p class="loading-text">Buscando...</p>';
+    try {
+        const [country]=await fetchJSON(
+            `${COUNTRIES_API}/name/${encodeURIComponent(query)}?fields=name,capital,population,flags,region`
+        )
+        const {
+            name,
+            capital = 'N/A',
+            population,
+            flags: { svg: flag },
+            region,
+            } = country;
+
+            // Template literal para construir el HTML
+            countryResult.innerHTML = `
+            <div class="country-card">
+                <img src="${flag}" alt="Bandera de ${name}" class="country-flag" />
+                <div class="country-info">
+                <h4>${name}</h4>
+                <p>🏛 Capital: <strong>${capital}</strong></p>
+                <p>🌍 Región: <strong>${region}</strong></p>
+                <p>👥 Población: <strong>${population.toLocaleString()}</strong></p>
+                </div>
+            </div>`;
+    } catch (error) {
+        countryResult.innerHTML=`<p class="error-text">País no encontrado.</p>`;
+    }
+}
+
+let searchTimer;
+if (countryInput) {
+  countryInput.addEventListener('input', (e) => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => fetchCountry(e.target.value), 600);
+  });
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+    if(pokeSection) fetchPokemons(0);
+
+    //fetchProjects();
+
+})
+

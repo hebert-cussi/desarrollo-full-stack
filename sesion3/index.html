@@ -125,49 +125,54 @@
             <h2>Mis proyectos implementados</h2>
             <p>Soluciones reales construidas con tecnologías modernas.</p>
           </header>
-
+          
           <!-- CSS Grid: auto-fill responsive, sin media queries extra -->
-          <div class="projects-grid">
+          <!-- JS Sesión 3: botones de filtro – addEventListener + Array.filter() + classList -->
+          <div class="filter-bar" role="group" aria-label="Filtrar proyectos">
+            <button class="filter-btn active" data-filter="all">Todos</button>
+            <button class="filter-btn" data-filter="frontend">Front-End</button>
+            <button class="filter-btn" data-filter="backend">Back-End</button>
+            <button class="filter-btn" data-filter="fullstack">Full Stack</button>
+          </div>
+          <p class="projects-meta"><span id="project-count"></span></p>
+          <div class="projects-grid" id="projects-grid"></div>
+          <div id="projects-loader" class="loader hidden" aria-live="polite" >
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+      </section>
 
-            <article class="project-card">
-              <div class="project-img" aria-hidden="true">📱</div>
-              <div class="project-info">
-                <h3>App de Tareas</h3>
-                <p>Aplicación web con drag &amp; drop, almacenamiento local y modo oscuro. UI minimalista con microinteracciones.</p>
-                <footer class="project-tags">
-                  <span class="tech-badge">React</span>
-                  <span class="tech-badge">CSS Modules</span>
-                  <span class="tech-badge">Flexbox</span>
-                </footer>
+      <section id="apis" aria-label="Consumo de APIs públicas">
+        <div class="container">
+          <header class="section-header">
+            <h2>APIs Públicas en Vivo</h2>
+            <p>Ejemplos reales de Fetch API, <code>async/await</code> y <code>Promise.all</code>.</p>
+          </header>
+
+          <div class="api-panel" id="poke-section">
+            <div class="api-panel__heacer">
+              <span class="api-badge">PokeAPI</span>
+              <h3>Pokémon con <code>Promise.all()</code></h3>
+              <p>Carga 6 Pokémon <strong>en paralelo</strong>. Cada tarjeta es una promesa independiente.</p>              
+            </div>
+            <div id="poke-grid" class="poke-grid"></div>
+            <button id="poke-next" class="btn btn--outline btn--sm"> Cargar siguientes →</button>
+          </div>
+          <div class="api-panel" id="pais-section">
+            <div class="api-panel__header">
+                <span class="api-badge">countries.dev</span>
+                <h3>Buscar país</h3>
+                <p>Fetch GET con <strong>async/await</strong> y <strong>destructuring</strong> del objeto JSON.</p>
               </div>
-            </article>
-
-            <article class="project-card">
-              <div class="project-img" aria-hidden="true">🌿</div>
-              <div class="project-info">
-                <h3>EcoShop</h3>
-                <p>E-commerce sostenible con sistema de filtros, carrito de compras y diseño responsive.</p>
-                <footer class="project-tags">
-                  <span class="tech-badge">HTML5 semántico</span>
-                  <span class="tech-badge">CSS Grid</span>
-                  <span class="tech-badge">JavaScript</span>
-                </footer>
+              <div class="country-search-box">
+                <input
+                  type="search"
+                  id="country-search"
+                  placeholder="Escribe un país… ej: Bolivia"
+                  aria-label="Buscar país"
+                />
               </div>
-            </article>
-
-            <article class="project-card">
-              <div class="project-img" aria-hidden="true">📊</div>
-              <div class="project-info">
-                <h3>Dashboard Analytics</h3>
-                <p>Panel de control con gráficas en tiempo real, filtros dinámicos y exportación de datos.</p>
-                <footer class="project-tags">
-                  <span class="tech-badge">Node.js</span>
-                  <span class="tech-badge">PostgreSQL</span>
-                  <span class="tech-badge">Chart.js</span>
-                </footer>
-              </div>
-            </article>
-
+              <div id="country-result" class="country-result"></div>
           </div>
         </div>
       </section>
@@ -204,6 +209,17 @@
                   <p>Menos de 48 horas</p>
                 </div>
               </div>
+              <!-- JS Sesión 4: flujo del Event Loop visualizado -->
+               <div class="event-loop-info">
+                <h4>Flujo de envio (Event Loop)</h4>
+                <ol>
+                  <li><span class="step-badge">1</span> <code>submit</code> → <code>preventDefault()</code></li>
+                  <li><span class="step-badge">2</span> <code>await validateEmail()</code> → Promesa</li>
+                  <li><span class="step-badge">3</span> <code>await fetch()</code> POST → microtarea</li>
+                  <li><span class="step-badge">4</span> <code>finally</code> → resetea el botón</li>
+                </ol>
+               </div>
+
             </aside>
 
             <!-- Formulario con inputs HTML5 modernos -->
@@ -320,6 +336,7 @@
       </div>
       <p class="footer-copy">&copy; 2025 Hebert Cussi Cuentas. Todos los derechos reservados.</p>
     </footer>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
     <script>
       // Actualizar valor del range en tiempo real
