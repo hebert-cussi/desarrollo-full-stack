@@ -1,0 +1,64 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"  
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Proyecto {
+  id            Int          @id @default(autoincrement())
+  titulo        String
+  descripcion   String
+  emoji         String       @default("💻")
+  categoria     Categoria
+  urlDemo       String?
+  urlRepo       String?
+  destacado     Boolean      @default(false)
+  creadoEn      DateTime     @default(now())
+  actualizadoEn DateTime     @updatedAt
+  tecnologias   Tecnologia[]
+
+  @@map("proyectos")
+}
+
+model Tecnologia {
+  id        Int            @id @default(autoincrement())
+  nombre    String         @unique
+  area      AreaTecnologia
+  proyectos Proyecto[]
+
+  @@map("tecnologias")
+}
+
+model Mensaje {
+  id          Int       @id @default(autoincrement())
+  nombre      String
+  email       String
+  servicio    String?
+  presupuesto Int?
+  fecha       DateTime? @db.Date
+  mensaje     String
+  leido       Boolean   @default(false)
+  creadoEn    DateTime  @default(now())
+
+  @@map("mensajes")
+}
+
+enum Categoria {
+  FRONTEND
+  BACKEND
+  FULLSTACK
+}
+
+enum AreaTecnologia {
+  FRONTEND
+  BACKEND
+  BASE_DATOS
+  HERRAMIENTA
+}
